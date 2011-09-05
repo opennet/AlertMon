@@ -1,0 +1,5 @@
+AuthName        "Alertmon Visualizator."
+AuthType        Basic
+AuthUserfile    ~/.htpasswd
+require		 valid-user
+

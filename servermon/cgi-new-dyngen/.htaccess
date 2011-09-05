@@ -1,0 +1,5 @@
+AuthName        OpenNet_HQ
+AuthType        Basic
+AuthUserfile    /home/opennet/.passwd_pub
+require		valid-user
+

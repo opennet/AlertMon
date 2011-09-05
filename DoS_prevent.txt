@@ -1,0 +1,175 @@
+Заметки по защите от DoS и DDos атак (в контексте защиты WEB-сервера).
+
+
+DoS - воздействие на сервис от одного или небольшого числа IP.
+DDoS - воздействие на сервис от большого числа разных IP.
+
+Динамика:
+    - Мгновенное нарастание запросов, умышленная DoS, DDoS атака.
+    - Пик активности, приводящий к DoS, DDoS. Сглажен во времени, нарастает постепенно.
+
+- Флуд, syn-флуд, пустые запосы и т.д. (DoS и DDoS)
+    = (DoS) ограничение числа одновременных запросов или запросов в ед. времени.
+    = (DDoS) жесткие лимиты (ограничение реально выдерживаемого системой 
+    	  максимальное число ftp и http процессов)
+
+- Большой LA.
+    - (DoS) много сетевых соединений с одного IP
+        = Блокирование IP через .htaccess или firewall.
+    - (DDoS) Общий пик активности (запросы разных URL), из-за ссылки 
+             на популярном ресурсе.
+    - (DDoS) Большое число запросов одинаковых URL с разных IP.
+	- много запросов одинаковых CGI с одними и теми же параметрами в логе apache.
+    	    = Дамп вывода CGI в статику и перенаправление через mod_rewrite.
+	- много запросов одинаковых CGI с разными параметрами в логе apache.
+    	    = rate-limit запросов проблемного CGI.
+
+- Большой трафик.
+    - много запросов одного и того же URL в логе apache.
+        = Shaper или лимитирование числа запросов этого URL.
+
+- Процессы залязят в SWAP (не хватает памяти, по идее отражается через LA).
+    = уменьшение максимальнодопустимого числа процессов.
+
+
+---------------------
+Реализация для alertmon3 (альтернативный способ использование FastCGI, mod_perl или lib-lock.pl):
+
+    - DoS, большой LA при большом числе соединений с одного IP: 
+	if (la_mon && netstat_mon) { auto_blocker }
+
+    - DDoS, разрастание числа httpd процессов.
+	proc_mon && apache_mon
+
+    - DDoS, большой LA, множество запросов от разных IP
+	la_mon && apache_mon
+
+Алгоритм работы плагина apache_mon:
+    - Анализ лога за последние N строк или с места запомненого с прошлого запуска.
+    - Если превышены допустимые значения, то проверяем флаги la_mon или proc_mon
+      в скобках вид реакции, сортировка в порядке приоритета, т.е. при одном срабатывании, 
+      дальнейшей реакции не происходит:
+	max_one_ip - число запросов с одного IP (act:ip-block).
+	max_one_cgi_param_requiets - всего запросов одного CGI с одинаковыми 
+				     параметрами (act:cgi-cache).
+	max_one_cgi_requiets - всего запросов одного CGI (act:cgi-limit).
+	max_one_url_requiets - всего запросов одного не CGI URL (act:url-rate-limit).
+
+	max_cgi_requiets - всего запросов cgi-скриптов (act:all-rate-limit).
+	max_all_requests - всего запросов (act:all-rate-limit).
+	max_diff_ip - число разных IP за за период (act:all-rate-limit).
+	max_traffic_url_percent - процент от max_traffic для одного URL (act:url-rate-limit).
+	max_traffic - максимальное значение трафика (act:all-rate-limit).
+    - Флуд с IP + обнаружен la_mon или proc_mon флаг (если сработало не переходим к url блокировкам)
+      Блокировка IP:
+	- ip-block: auto_blocker.
+    - Нет флуда с одинаковых IP + url флуд + Если обнаружен la_mon или proc_mon флаг
+        Блокировка URL:
+	- cgi-cache: для CGI преобразум вывод в статику (curl, mod_rewrite).
+	- url-rate-limit: для статики ограничиваем rate-limit (реализация в планах).
+	- all-rate-limit: ограничение общего числа запросов.    
+---------------------
+Установка ограничений (выставляются в соответствии с объемом ОЗУ в системе):
+
+ulimit:
+    ulimit -c 0 # only core-files less than 20 MB are written
+    ulimit -d 60000 # max data size of a program
+    ulimit -s 8192 # max stack size of a program
+    ulimit -m 60000 # max resident size
+    ulimit -v 70000 # max virtual size
+    ulimit -f 500000 # max file  size
+    ulimit -n 512 # max file  size
+
+apache (httpd.conf):
+    Timeout 20
+    MaxKeepAliveRequests 15
+    KeepAliveTimeout 2
+    MinSpareServers 3
+    MaxSpareServers 64
+    StartServers 1024
+    MaxClients 2500
+    MaxRequestsPerChild 100000
+    MaxConnPerIP 25	# для mod_limitipconn
+	    
+vsftpd (/etc/vsftpd.conf):
+    listen=YES
+    tcp_wrappers=YES
+    check_shell=YES
+    #hide_ids=YES
+    max_clients=100
+    max_per_ip=5
+    idle_session_timeout=600
+    data_connection_timeout=120
+
+mod_php:
+    php_admin_flag safe_mode on
+    php_admin_flag allow_url_fopen  off
+    php_admin_value doc_root /home/hst_mklimat/htdocs
+    php_admin_flag magic_quotes_runtime on
+    php_admin_value open_basedir /home/hst_mklimat/htdocs
+    php_admin_value upload_tmp_dir /home/hst_mklimat/htdocs/tmp
+    php_admin_value safe_mode_allowed_env_vars PHP_
+    php_admin_value upload_max_filesize 1024000
+    php_admin_value max_execution_time 10
+    php_admin_value post_max_size  1M
+    php_admin_value memory_limit 1M
+    php_admin_flag mysql.allow_persistent  off
+    php_admin_value mysql.max_links  5
+    php_admin_flag pgsql.allow_persistent  off
+    php_admin_value pgsql.max_links  5
+    php_admin_value disable_functions mysql_pconnect,pg_pconnect
+												    
+postgresql (data/postgresql.conf): 
+    max_connections = 64
+
+mysql (/etc/my.cnf):
+    [mysqld]
+    set-variable    = max_connections=15
+    set-variable    = thread_concurrency=8
+
+inetd (BSD):
+    192.168.1.1:pop-3    stream  tcp     nowait/30/5  root  /usr/sbin/popa3d popa3d
+    192.168.1.2:pop-3    stream  tcp     nowait/10/5  root  /usr/sbin/chroot chroot /mail /usr/sbin/popa3d
+    ftp     stream  tcp     nowait/20/15/10  root    /usr/local/libexec/ftpd ftpd -l -S -d
+    , где 20 - max-child
+	  15 - max-connections-per-ip-per-minute
+	  10 - max-child-per-ip
+
+xinetd:
+    nice       = 10	# "nice" приоритет
+    cps        = 30 2   # 30 - допустимое число коннектов в сек, 2 - время блокировки 
+			#   в сек. после превышения 30.
+    instances  = 30     # Максимально допустимое число процессов для данного сервиса
+    per_source = 2      # Максимальное число одновременных коннектов с одного IP
+    max_load   = 2.5	# Максимальное значение LA (1 min. load average) при 
+			#   привышении которого сервис будет заблокирован.
+    rlimit_as  = 70M	# Ограничение на объем виртуальной памяти
+    rlimit_cpu = 30	# Ограничение на процессорное время в сек.
+    only_from  = 192.168.193.0 192.168.204/24 # Доступ открыт только для 
+					      #   указанных сетей
+    no_accessn = 192.168.193.5 192.168.193.6 # Доступ закрыт.
+ 
+ipfw (FreeBSD):
+    Запретим более 30 коннектов для 80 порта сервера 1.2.3.4.
+    ipfw add allow tcp from any to 1.2.3.4 80 limit src-addr 30
+    ipfw add allow tcp from any to 1.2.3.4 80 via fxp0 setup limit src-addr 10
+	Вместо src-addr можно использовать src-port, dst-addr, dst-port
+
+iptables (Linux):
+     
+    # 20 запросов с сек.
+	iptables --new-chain car
+        iptables --insert OUTPUT 1 -p tcp --destination-port 25 -o eth1 --jump car
+	iptables --append car -m limit --limit 20/sec --jump RETURN
+        iptables --append car --jump DROP
+
+    # Максимум 10 одновременных соединений к 80 порту с одного IP
+	iptables -A INPUT-p tcp --dport 80 -m iplimit --iplimit-above 10 -j REJECT
+
+    # Блокируем на стадии SYN
+         iptables -I INPUT -p tcp --syn --dport 80 -j DROP -m iplimit --iplimit-above 10
+
+    # 20 соединений на сеть класса С
+         iptables -p tcp --dport 80 -m iplimit --iplimit-above 20 --iplimit-mask 24 -j REJECT 
+        
+

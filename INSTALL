@@ -1,0 +1,29 @@
+Установка alertmon.
+-------------------
+
+1. Скопируйте содержимое архива в директорию /usr/local/alertmon
+
+2. Проверьте все ли необходимые Perl модули установлены:
+	perl -c ./topmon.pl
+
+   При необходимости установите через интерфейс perl -MCPAN -e shell
+   или из директории perl_mods в комплекте alertmon
+   или из комплекта дистрибутива, например:
+   	apt-get install perl-Config-General perl-Net-DNS perl-Net-Ping perl-Net-SNMP
+
+
+2. Отредактируйте topmon.conf
+
+3. Пропишите запуск topmon в cron
+    */5 * * * * cd /usr/local/alertmon; ./topmon.pl
+
+4. Пропишите запуск скрипта для чистки старых логов в cron
+    6 8 * * * cd  /usr/local/alertmon/add-ons; ./log_cleaner.pl
+
+5. При использовании web-интерфейса, пропишите в файл конфигурации NET-SNMP
+   /etc/snmp/snmpd.conf:
+	exec .1.3.6.1.4.1.2021.57 alertmon /usr/local/alertmon/snmp_export.pl
+
+
+Установка web-интерфейса servermon.
+-----------------------------------

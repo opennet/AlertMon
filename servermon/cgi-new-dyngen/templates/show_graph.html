@@ -1,0 +1,72 @@
+<!--header-->
+<html>
+    <head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=koi8-r">
+    <title>Alertmon Monitoring Graph.</title>
+</head>
+<body bgcolor="#FFFFFF">
+<li><a href="?act_sum=1">Сводный список</a> | <a href="?act_group=1">Группы с смешиванием хостов.</a>
+<form action="show_graph.cgi" method="GET">
+<input type="hidden" name="%%ACTION%%" value="1">
+<input type="hidden" name="host" value="%%HOST%%">
+<input type="hidden" name="group" value="%%GROUP%%">
+Число дней: <input type="text" name="days" size="2" value="%%DAYS%%"> 
+Сдвиг дней: <input type="text" name="skip_days" size="2" value="%%SKIP_DAYS%%">
+Ширина: <input type="text" name="width" size="3" value="%%WIDTH%%">
+Высота: <input type="text" name="height" size="3" value="%%HEIGHT%%">
+<input type="submit" name="submit" value="->">
+</form>
+<a name="top"></a>
+<!--/header-->
+
+<!--sum_header-->
+<h1>Сводные графики по каждому хосту</h1>
+<!--/sum_header-->
+
+<!--sum_footer-->
+<hr noshade size=1>
+<!--/sum_footer-->
+
+<!--host_header-->
+<h1>Подробные графики для хоста %%HOST%%</h1>
+<!--/host_header-->
+
+<!--host_footer-->
+<hr noshade size=1>
+<!--/host_footer-->
+
+<!--group_header-->
+<h1>Подробные графики для группы графиков %%GROUP%% с смешиванием хостов.</h1>
+<!--/group_header-->
+
+<!--group_footer-->
+<hr noshade size=1>
+<!--/group_footer-->
+
+<!--group_mixhost_header-->
+<h1>Подробные графики для группы %%GROUP%% по разным хостам.</h1>
+<!--/group_mixhost_header-->
+
+<!--group_mixhost_footer-->
+<hr noshade size=1>
+<!--/group_mixhost_footer-->
+
+<!--image_block-->
+<br>
+<hr noshade size=1><b>%%CUR_GROUP%%</b><br>
+<img src="%%IMG_URL%%" border=0></img>
+<a href="?act_host_mon=1&host=%%CUR_HOST%%&group=%%CUR_GROUP%%">Блоки мониторинга</a>
+ | 
+<a href="?act_host_group=1&host=%%CUR_HOST%%&group=%%CUR_GROUP%%">Группы</a>
+<!--/image_block-->
+
+<!--group_menu-->
+<!--/group_menu-->
+
+<!--host_menu-->
+<!--/host_menu-->
+
+<!--footer-->
+</body>
+</html>
+<!--/footer-->

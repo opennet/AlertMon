@@ -1,0 +1,2 @@
+AltLinux:
+	apt-get install perl-Config-General perl-Net-DNS perl-Net-Ping perl-Net-SNMP

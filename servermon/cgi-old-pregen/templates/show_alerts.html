@@ -1,0 +1,199 @@
+<!--header-->
+<html>
+    <head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=koi8-r">
+    <title>Alertmon, summary.</title>
+</head>
+<body bgcolor="#FFFFFF">
+<table border=0 width=90% cellpadding=1 cellspacing=0 bgcolor="#A8A8FF" align=center>
+<tr><td>
+<table border=0 width=100% cellpadding=5 cellspacing=0 bgcolor="#F0F0FF">
+<tr bgcolor="white">
+    <td><a href="?act_alerts=1">Активные алерты</a></td>
+    <td><a href="?act_history=1">История проблем</a></td>
+    <td><a href="?act_status=1">Текущее состояние</a></td>
+    <td><a href="show_graph.cgi">Графики</a></td>
+</tr>
+</table>
+</td></tr>
+</table>
+
+<a name="top"></a>
+<!--/header-->
+
+<!--host_act_sum_header-->
+<h1>Сводные данные по каждому хосту</h1>
+<table border=0 width=99% cellpadding=1 cellspacing=0 bgcolor="#A8A8FF" align=center>
+<tr><td>
+<table border=0 width=100% cellpadding=5 cellspacing=2 bgcolor="#F0F0FF">
+<!--/host_act_sum_header-->
+
+
+<!--host_act_header-->
+<tr bgcolor="#EEEEEE">
+<td colspan="4" >
+<table width="100%">
+<tr>
+    <td><b>%%CUR_HOST_INFO%%</b></td>
+    <td align="right">
+	[ <font color=red>-&gt;</font> <a href="?act_history=1&host=%%CUR_HOST%%"><b><u>История</u></b></a> ]
+	[ <font color=red>-&gt;</font> <a href="?act_status=1&host=%%CUR_HOST%%"><b><u>Тек. состояние</u></b></a> ]
+    </td>
+</tr>
+</table>
+</td>
+</tr>
+
+<!--/host_act_header-->
+
+<!--host_act_item-->
+<tr bgcolor="%%#IF:CUR_ORD=1?F9F9FF:FFFFFF:FI%%">
+    <td><font color="red">%%ALERT_GROUP%%.%%ALERT_NAME%%</font></td>
+    <td><small><font color="#505050">%%ALERT_INFO%%</font></small></td>
+    <td><small><font color="#505050">%%ALERT_TIME%%<br>
+        (%%ALERT_LENGTH%%)</font></small>
+    </td>
+    <td>[<a href="?act_history=1&host=%%CUR_HOST%%&group=%%ALERT_GROUP%%"><b><u>?</u></b></a>]</td>
+
+</tr>
+<!--/host_act_item-->
+
+<!--host_act_footer-->
+<tr bgcolor="white"><td colspan="5">&nbsp;</td></tr>
+<!--/host_act_footer-->
+
+<!--host_act_sum_footer-->
+<tr bgcolor="#A8A8FF">
+<td>ID</td>
+<td>Комментарий</td>
+<td>Дата/Срок</td>
+<td>?</td>
+</tr>
+</table>
+</td></tr>
+</table>
+<hr noshade size=1>
+<!--/host_act_sum_footer-->
+
+
+
+
+
+
+
+<!--host_status_sum_header-->
+<h1>Текущее состояние</h1>
+<table border=0 width=99% cellpadding=1 cellspacing=0 bgcolor="#A8A8FF" align=center>
+<tr><td>
+<table border=0 width=100% cellpadding=5 cellspacing=2 bgcolor="#F0F0FF">
+<!--/host_status_sum_header-->
+
+
+<!--host_status_header-->
+<tr bgcolor="#EEEEEE">
+<td>
+<table width="100%">
+<tr>
+    <td><b>%%CUR_HOST_INFO%%</b></td>
+    <td align="right">
+	[ <font color=red>-&gt;</font> <a href="?act_history=1&host=%%CUR_HOST%%"><b><u>История</u></b></a> ]
+	[ <font color=red>-&gt;</font> <a href="?act_alerts=1&host=%%CUR_HOST%%"><b><u>Тек. проблемы</u></b></a> ]
+    </td>
+</tr>
+</table>
+</td>
+</tr>
+<tr><td>
+<table width="100%">
+<tr><td  valign="top">
+<table>
+<!--/host_status_header-->
+
+<!--host_status_item-->
+<tr>
+    <td><font color="#505050">%%STATUS_GROUP%%.%%STATUS_NAME%%</font></td>
+    <td><b>%%STATUS_VALUE%%</b></td>
+    <td>[<a href="?act_history=1&host=%%CUR_HOST%%&group=%%STATUS_GROUP%%"><b><u>?</u></b></a>]</td>
+</tr>
+<!--/host_status_item-->
+
+<!--host_status_item_br-->
+</table>
+</td><td valign="top">
+<table>
+<!--/host_status_item_br-->
+
+<!--host_status_footer-->
+</table>
+</td></tr>
+</table>
+</td></tr>
+<tr bgcolor="white"><td>&nbsp;</td></tr>
+<!--/host_status_footer-->
+
+<!--host_status_sum_footer-->
+</table>
+</td></tr>
+</table>
+<hr noshade size=1>
+<!--/host_status_sum_footer-->
+
+
+
+<!--history_header-->
+<h1>История алертов</h1>
+<table border=0 width=99% cellpadding=1 cellspacing=0 bgcolor="#A8A8FF" align=center>
+<tr><td>
+<table border=0 width=100% cellpadding=5 cellspacing=2 bgcolor="#F0F0FF">
+<tr bgcolor="#A8A8FF">
+<td>N</td>
+<td>Хост</td>
+<td>Группа</td>
+<td>Имя</td>
+<td>Дата</td>
+<td>Срок</td>
+<td>Комментарий</td>
+</tr>
+<!--/history_header-->
+
+<!--history_pager-->
+<tr bgcolor="#E0E0E0">
+<td align="left"><b><a href="?act_history=1&name=%%PARAM_NAME%%&host=%%PARAM_HOST%%&group=%%PARAM_GROUP%%&lines=%%PARAM_LINES%%&skip=%%HISTORY_PREV_SKIP%%">&lt;&lt;</td></b>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td align="right"><b><a href="?act_history=1&name=%%PARAM_NAME%%&host=%%PARAM_HOST%%&group=%%PARAM_GROUP%%&lines=%%PARAM_LINES%%&skip=%%HISTORY_NEXT_SKIP%%">&gt;&gt;</td></b>
+</td>
+</tr>
+<!--/history_pager-->
+
+
+<!--history_item-->
+<tr bgcolor="%%#IF:CUR_ORD=1?F9F9FF:FFFFFF:FI%%">
+    <td><small><font color="#505050">%%HISTORY_LINE_NUM%%</font></small></td>
+    <td><b><a href="?act_history=1&host=%%HISTORY_HOST%%">%%HISTORY_HOST%%</b></a></td>
+    <td><a href="?act_history=1&group=%%HISTORY_GROUP%%">%%HISTORY_GROUP%%</a></td>
+    <td><a href="?act_history=1&name=%%HISTORY_NAME%%">%%HISTORY_NAME%%</a></td>
+    <td><small><font color="#505050">%%HISTORY_START_TIME%%<br>
+        %%HISTORY_STOP_TIME%%</font></small>
+    </td>
+    <td><small><font color="#505050">%%HISTORY_LENGTH%%</font></small></td>
+    <td><small><font color="#505050">%%HISTORY_INFO%%</font></small></td>
+</tr>
+<!--/history_item-->
+
+<!--history_footer-->
+</table>
+</td></tr>
+</table>
+<hr noshade size=1>
+<!--/history_footer-->
+
+
+
+<!--footer-->
+</body>
+</html>
+<!--/footer-->
